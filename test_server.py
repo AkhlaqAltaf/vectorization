@@ -1,8 +1,10 @@
 
 from flask import Flask, request
+
 from src.controller.gpt_controller import ai_command_controller
 from src.controller.home_page_controller import home_page_controller
-from src.controller.token_evaluation_controller import token_evaluation_controller
+from src.controller.token_evaluation_controller import token_evaluation_controller, token_occurrences_controller, \
+    fetch_vector_db_info_controller
 from src.db.tokenization import Tokenization
 from src.db.vectordb import VectorDb
 
@@ -27,3 +29,10 @@ def test_vect_post():
     vector_db = VectorDb()
     print("...................", tokenization.processed_data)
     vector_db.post_data(tokenization.processed_data)
+
+@app.route('/token_occurrences/')
+def fetch_unique_tokens():
+    return token_occurrences_controller(request)
+@app.route('/vector-db-details/')
+def fetch_vector_db_info():
+    return fetch_vector_db_info_controller(request)
