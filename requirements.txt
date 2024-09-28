@@ -1,0 +1,6 @@
+chromadb
+spacy
+pandas
+dotenv
+requests
+flask

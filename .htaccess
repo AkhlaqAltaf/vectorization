@@ -1,0 +1,9 @@
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+WSGIScriptAlias / /mntsdc/fazit_vec/site/vectorization/wsgi.py
+WSGIDaemonProcess flask_app python-path=/mntsdc/fazit_vec/site/vectorization/myenv/lib/python3.8/site-packages
+WSGIProcessGroup flask_app
+
+<Directory /mntsdc/fazit_vec/site/vectorization>
+    Order allow,deny
+    Allow from all
+</Directory>
