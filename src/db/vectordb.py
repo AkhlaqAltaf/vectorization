@@ -6,7 +6,7 @@ import uuid
 import pandas as pd
 from dotenv import load_dotenv
 
-input_file = "../data_files/processed_data.csv"
+input_file = "../../data_files/processed_data.csv"
 
 class VectorDb:
     def __init__(self):

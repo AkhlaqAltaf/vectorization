@@ -123,7 +123,7 @@ console.log(result);  // Make sure data is logged
 rows += `
     <tr>
         <td>${result.text_item}</td>
-        <td>${(result.similarity * 100).toFixed(2)}%</td>
+        <td>${(result.similarity).toFixed(2)}%</td>
         <td>${result.row_number}</td>
         <td>${result.paragraph}</td>
         <td>${result.char_start_pos}</td>

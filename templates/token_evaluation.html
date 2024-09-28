@@ -1,0 +1,175 @@
+
+{% extends "base.html" %}
+
+
+{% block title %} EVALUATION
+{% endblock title %}
+
+{% block body %}
+
+    <div class="container mt-4">
+        <h1>Keywords/Tokens Evaluation</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Row#</th>
+                    <th>Text Preview</th>
+                    <th>Token Count</th>
+                    <th>Paragraphs</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td>{{ item.row }}</td>
+                    <td>{{ item.text_preview[:20] }}...</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#tokenCountModal"
+                           onclick="showTokens('{{ item.tokens | tojson }}')">{{ item.token_count }}</a>
+                    </td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#fullDocumentModal"
+                           onclick="showFullDocument('{{ item.text_preview }}')">{{ item.paragraph_count }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button class="btn btn-info" data-toggle="modal" data-target="#uniqueTokensModal">
+            Unique Tokens ({{ data|map(attribute='token_count')|sum }})
+        </button>
+        <button class="btn btn-info" data-toggle="modal" data-target="#vectorDBModal">
+            Vector DB Size
+        </button>
+        <button class="btn btn-info" data-toggle="modal" data-target="#sqlDBModal">
+            SQL DB Size
+        </button>
+    </div>
+
+    <!-- Token Count Modal -->
+    <div class="modal fade" id="tokenCountModal" tabindex="-1" role="dialog" aria-labelledby="tokenCountModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tokenCountModalLabel">Token Count</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul id="tokenList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Document Modal -->
+    <div class="modal fade" id="fullDocumentModal" tabindex="-1" role="dialog" aria-labelledby="fullDocumentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fullDocumentModalLabel">Full Document</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="fullDocumentText">
+                    <!-- Full text will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unique Tokens Modal -->
+    <div class="modal fade" id="uniqueTokensModal" tabindex="-1" role="dialog" aria-labelledby="uniqueTokensModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uniqueTokensModalLabel">Unique Tokens</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="uniqueTokensList">
+                            <!-- Unique tokens will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vector DB Size Modal -->
+    <div class="modal fade" id="vectorDBModal" tabindex="-1" role="dialog" aria-labelledby="vectorDBModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vectorDBModalLabel">Vector DB Size</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Number of records: X</p>  <!-- Fetch from server -->
+                    <p>Size on disk: Y</p>      <!-- Fetch from server -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL DB Size Modal -->
+    <div class="modal fade" id="sqlDBModal" tabindex="-1" role="dialog" aria-labelledby="sqlDBModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sqlDBModalLabel">SQL DB Size</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Record count: A</p>  <!-- Fetch from server -->
+                    <p>Size: B</p>         <!-- Fetch from server -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function showTokens(tokens) {
+            const tokenList = JSON.parse(tokens);
+            const tokenListContainer = document.getElementById('tokenList');
+            tokenListContainer.innerHTML = ""; // Clear previous data
+            tokenList.sort(); // Sort tokens alphabetically
+            tokenList.forEach(token => {
+                const li = document.createElement('li');
+                li.textContent = token;
+                tokenListContainer.appendChild(li);
+            });
+        }
+
+        function showFullDocument(fullText) {
+            document.getElementById('fullDocumentText').textContent = fullText;
+        }
+
+        // Function to fetch and display unique tokens and their counts
+        function fetchUniqueTokens() {
+            // Perform an API request to get unique tokens
+            // Populate #uniqueTokensList with the data received
+        }
+    </script>
+
+
+{% endblock %}
