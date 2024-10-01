@@ -2,9 +2,11 @@ import pandas as pd
 import spacy
 
 class Tokenization:
-    def __init__(self, file_path="../data_files/input/p4.csv"):
+    def __init__(self, file_path,output_file):
         self.file_path = file_path
         self.load_df_nlp()
+        self.out_put_file =output_file
+
         self.process_file_data()
 
     def load_df_nlp(self):
@@ -87,7 +89,7 @@ class Tokenization:
             print(f"Row {index} Unique Tokens:", combined_tokens)
 
         # Optionally save the processed data back to a CSV file
-        output_file = "./data_files/processed_data2.csv"
+        output_file = self.out_put_file
         df['entities'] = df.apply(lambda row: [(ent.text, ent.label_) for ent in nlp(f"{row[2]} {row[3]}").ents], axis=1)
         df['paragraphs'] = df.apply(lambda row: self.paragraph_level_tokenization(f"{row[2]} {row[3]}"), axis=1)
         df['sentences'] = df.apply(lambda row: self.sentence_level_tokenization(nlp(f"{row[2]} {row[3]}")), axis=1)

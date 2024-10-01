@@ -56,3 +56,35 @@ font-size: 24px; /* Font size for close icon */
 .dropdown-menu {
     z-index: 10000; /* Ensure dropdown appears on top */
 }
+
+
+
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .loader {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .loader.show {
+            display: block;
+        }
+
+        .message {
+            display: none;
+            margin-top: 20px;
+        }

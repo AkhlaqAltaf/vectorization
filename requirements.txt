@@ -4,3 +4,4 @@ pandas
 dotenv
 requests
 flask
+flask_sqlalchemy

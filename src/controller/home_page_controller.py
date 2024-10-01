@@ -1,6 +1,8 @@
 from flask import render_template, jsonify
-from src.vector_db.vectordb import VectorDb
 
+from src.sql_db.models.token_models import TokenMetaData, MetaData, Token
+from src.vector_db.vectordb import VectorDb
+from src.views import db  # SQLAlchemy session
 
 
 def home_page_controller(request):
@@ -19,20 +21,37 @@ def home_page_controller(request):
         input_text = request.form.get('inputText')
         token = int(request.form.get('token'))  # Ensure token is an integer
 
-        # Calculate time differences in milliseconds
+        # Vector DB processing (as per your original code)
         vector_db = VectorDb()
-
         results = vector_db.get_data(query_texts=input_text, return_tokens_limit=token)
+
         count = 0
         for result in results:
-            document = result.get('documents')
+            document = result.get('documents')  # This is your token_value
             distance = result.get('distances', 1)
-            metadata = result.get('metadata', {})
+
+            # Query MetaData and TokenMetaData from the database using the token_value (document)
+            metadata_query = (
+                db.session.query(MetaData, TokenMetaData)
+                .join(TokenMetaData, MetaData.id == TokenMetaData.metadata_id)
+                .join(Token, TokenMetaData.token_id == Token.id)
+                .filter(Token.token_value == document)
+                .first()
+            )
+
+            if metadata_query:
+                metadata, token_meta = metadata_query
+                full_text = metadata.full_text or "No text available"
+                char_start_pos = token_meta.char_start_pos or 0  # Retrieved from TokenMetaData
+                paragraph_number = metadata.paragraph_number or 0  # Also from TokenMetaData
+                row_number = metadata.row_number or 0
+            else:
+                full_text = "No text available"
+                char_start_pos = 0
+                paragraph_number = 0
+                row_number = 0
+
             count += 1
-            full_text = metadata.get('full_text', "No text available")
-            char_start_pos = metadata.get('char_start_pos', 0)
-            paragraph_number = metadata.get('paragraph_number', 0)
-            row_number = metadata.get('row', 0)
 
             response_message.append({
                 'text_item': document,
@@ -49,9 +68,7 @@ def home_page_controller(request):
                 'instances': f"Row {len(load_info_data) + 1}, Par {paragraph_number}, Pos {char_start_pos}"
             })
 
-
-        # If it's an AJAX request, return JSON instead of rendering the template
-
+        # Return JSON response for AJAX requests
         return jsonify({
             'response_message': response_message,
             'load_info_data': load_info_data,
@@ -60,7 +77,8 @@ def home_page_controller(request):
             'input_text': input_text,
             'token': token
         })
-    # If it's a normal request, render the full template
+
+    # For normal requests, render the template
     return render_template('index.html', response_message=response_message,
                            load_info_data=load_info_data,
                            reached_request_time=reached_request_time,

@@ -1,0 +1,113 @@
+
+    {% extends 'base.html' %}
+
+    {% block title %} Admin Panel {% endblock %}
+
+
+
+    {%block body%}
+
+<body>
+
+    <div class="container">
+        <h1 class="mb-4">Data Operations</h1>
+
+        <!-- File Upload Section -->
+        <div class="form-group">
+            <label for="fileInput">Choose a file to upload:</label>
+            <input type="file" id="fileInput" class="form-control-file">
+            <button onclick="uploadFile()" class="btn btn-primary mt-3">Upload File</button>
+        </div>
+
+        <!-- Buttons to Clear SQL DB and Vector DB -->
+        <button onclick="clearSqlDb()" class="btn btn-danger mb-3">Clear SQL DB</button>
+<!--        <button onclick="clearVectorDb()" class="btn btn-danger mb-3">Clear Vector DB</button>-->
+
+        <!-- Success/Error Message -->
+        <div id="message" class="alert message"></div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="loader">Loading...</div>
+
+    <!-- Bootstrap JS & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Show loader
+        function showLoader() {
+            document.getElementById('loader').classList.add('show');
+        }
+
+        // Hide loader
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('show');
+        }
+
+        // Display message
+        function showMessage(text, type='success') {
+            const messageBox = document.getElementById('message');
+            messageBox.classList.remove('alert-success', 'alert-danger');
+            messageBox.classList.add(`alert-${type}`);
+            messageBox.innerText = text;
+            messageBox.style.display = 'block';
+
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 4000);
+        }
+
+        // Handle file upload
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                showMessage('Please select a file to upload.', 'danger');
+                return;
+            }
+
+            showLoader();
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/upload_file', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+            hideLoader();
+            showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+        }
+
+        // Confirm and clear SQL DB
+        async function clearSqlDb() {
+            if (confirm('Are you sure you want to clear the SQL database?')) {
+                showLoader();
+                const response = await fetch('/clear_sql_db', {
+                    method: 'POST',
+                });
+                const result = await response.json();
+                hideLoader();
+                showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+            }
+        }
+
+        // Confirm and clear Vector DB
+        async function clearVectorDb() {
+            if (confirm('Are you sure you want to clear the Vector database?')) {
+                showLoader();
+                const response = await fetch('/clear_vector_db', {
+                    method: 'POST',
+                });
+                const result = await response.json();
+                hideLoader();
+                showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+            }
+        }
+    </script>
+</body>
+
+    {% endblock%}

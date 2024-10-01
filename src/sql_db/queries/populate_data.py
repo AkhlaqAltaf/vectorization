@@ -8,13 +8,25 @@ from src.sql_db.models.token_models import MetaData, Token, Entity, TokenMetaDat
     PhraseMetaData, Sentence, SentenceMetaData, Paragraph, ParagraphMetaData
 
 
-def create_all_one_time(db):
-    db.create_all()
+from sqlalchemy import inspect
 
+def create_all_one_time(db):
+    # Use SQLAlchemy inspector to check if tables exist
+    inspector = inspect(db.engine)
+    existing_tables = inspector.get_table_names()
+
+    if not existing_tables:
+        # If no tables exist, create all tables
+        print("No tables found, creating all tables...")
+        db.create_all()
+    else:
+        # If tables exist, do not create them again
+        print("Tables already exist, skipping creation.")
 
 class PopulateData:
     def __init__(self, db):
         self.db = db
+        create_all_one_time(db)
         pass
 
     def populate_metadata(self, row_number, full_text, topic, text_preview, question, link, page_id, token_list):
@@ -45,7 +57,7 @@ class PopulateData:
         db = self.db
         token_num = 0
         for token_value in token_list:
-            token_num += 0
+            token_num += 1
             # Check if the token already exists
             token = Token.query.filter_by(token_value=token_value).first()
 
