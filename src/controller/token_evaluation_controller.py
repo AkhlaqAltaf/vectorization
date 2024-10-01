@@ -2,8 +2,17 @@ import csv
 
 from flask import render_template
 from flask import jsonify
+from sqlalchemy import func
 
-from src.db.vectordb import VectorDb
+from src.sql_db.models.token_models import Phrase, Token, TokenMetaData, PhraseMetaData, Sentence, SentenceMetaData, \
+    Paragraph, ParagraphMetaData, Word, WordMetaData
+from src.sql_db.queries.fetch_evaluation_data import (fetch_paragraphs, get_sql_db_info ,
+                                                      fetch_phrases ,
+                                                      fetch_sentences ,
+                                                      fetch_tokens,
+                                                      fetch_words)
+from src.vector_db.vectordb import VectorDb
+from src.views import db
 
 
 # Define the function to count paragraphs in the text
@@ -14,64 +23,81 @@ def count_paragraphs(text):
 
 
 def token_evaluation_controller(request):
-    data = []
-    unique_tokens_set = set()  # To store unique tokens
+    model = request.args.get('model')
+    print("MODELS",model)
+    if model =="tokens":
+       data , unique_tokens_count=fetch_tokens()
 
-    # Read data from CSV file
-    with open('./data_files/processed_data.csv', 'r', encoding='utf-8') as csvfile:
-        csv_reader = csv.DictReader(csvfile)
-        for i, row in enumerate(csv_reader):
-            row_number = i + 1
-            text_preview = row['2'][:20] + "..."  # First 20 characters with ellipsis
-            full_text = row['3']  # Full text to extract paragraph count
-            token_list = eval(row['tokens'])  # Convert string representation to list
-            token_count = len(token_list)  # Count of tokens
-            paragraph_count, paragraphs = count_paragraphs(full_text)  # Count paragraphs
-            unique_tokens_set.update(token_list)  # Add tokens to the set
-
-            # Add to data list
-            data.append({
-                "row": row_number,
-                "text_preview": text_preview,
-                "token_count": token_count,
-                "paragraph_count": paragraph_count,
-                "tokens": sorted(token_list),  # Sorting tokens alphabetically
-                "full_text": full_text,  # Full text to be displayed in popup
-                "paragraphs": paragraphs,  # Paragraphs for the popup
-                "entities": eval(row['entities']),  # Convert string to list of tuples
-                "link": row['1']  # Link from column 1
-            })
-    unique_tokens_count = len(unique_tokens_set)
+    elif  model=='phrase':
+        data, unique_tokens_count = fetch_phrases()
+    elif model =='sentence':
+        data, unique_tokens_count = fetch_sentences()
+    elif model =='paragraph':
+        data, unique_tokens_count = fetch_paragraphs()
+    elif model =="word":
+        data, unique_tokens_count = fetch_words()
 
     return render_template('token_evaluation.html', data=data,unique_tokens=unique_tokens_count)
 
 
 
-
 def fetch_vector_db_info_controller(request):
     vectordb = VectorDb()
-    print(vectordb.get_db_info())
+    print("DATA WILL BE HERE ...",vectordb.get_db_info())
     return jsonify(vectordb.get_db_info())
+def fetch_sql_db_info_controller(request):
+    sql_info=get_sql_db_info()
+    print("SQL DB INFO-------",sql_info)
 
-
+    return jsonify(sql_info)
 def token_occurrences_controller(request):
-    """Read the processed CSV file and return unique tokens with their occurrence counts."""
-    token_count_dict = {}
+    """Fetch tokens and their occurrence counts from the SQL database."""
+    model = request.args.get('model')
+    if model =="tokens":
+        token_count_data = db.session.query(
+            Token.token_value,
+            func.count(TokenMetaData.token_id).label('count')
+        ).join(TokenMetaData, Token.id == TokenMetaData.token_id) \
+            .group_by(Token.token_value).all()
 
-    # Read data from CSV file
-    with open('./data_files/processed_data.csv', 'r', encoding='utf-8') as csvfile:
-        csv_reader = csv.DictReader(csvfile)
-        for row in csv_reader:
-            token_list = eval(row['tokens'])  # Convert string representation to list
-            for token in token_list:
-                if token in token_count_dict:
-                    token_count_dict[token] += 1
-                else:
-                    token_count_dict[token] = 1
+    elif  model=='phrase':
+        token_count_data = db.session.query(
+            Phrase.phrase_value,
+            func.count(PhraseMetaData.phrase_id).label('count')
+        ).join(PhraseMetaData, Phrase.id == PhraseMetaData.phrase_id) \
+        .group_by(Phrase.phrase_value).all()
 
-    # Convert the dictionary to a list of dictionaries
-    token_occurrences_list = [{"token": token, "count": count} for token, count in token_count_dict.items()]
+
+    elif model =='sentence':
+        token_count_data = db.session.query(
+            Sentence.sentence_value,
+            func.count(SentenceMetaData.sentence_id).label('count')
+        ).join(SentenceMetaData, Sentence.id == SentenceMetaData.sentence_id) \
+        .group_by(Sentence.sentence_value).all()
+
+
+    elif model =='paragraph':
+        token_count_data = db.session.query(
+            Paragraph.paragraph_value,
+            func.count(ParagraphMetaData.paragraph_id).label('count')
+        ).join(ParagraphMetaData, Paragraph.id == ParagraphMetaData.phrase_id) \
+        .group_by(Paragraph.paragraph_value).all()
+    elif model =="word":
+        token_count_data = db.session.query(
+            Word.word_value,
+            func.count(WordMetaData.word_id).label('count')
+        ).join(WordMetaData, Word.id == WordMetaData.word_id) \
+        .group_by(Word.word_value).all()
+
+    else:
+        token_count_data = db.session.query(
+            Token.token_value,
+            func.count(TokenMetaData.token_id).label('count')
+        ).join(TokenMetaData, Token.id == TokenMetaData.token_id) \
+            .group_by(Token.token_value).all()
+
+
+    # Convert the query result to a list of dictionaries
+    token_occurrences_list = [{"token": token, "count": count} for token, count in token_count_data]
 
     return jsonify(token_occurrences_list)
-
-

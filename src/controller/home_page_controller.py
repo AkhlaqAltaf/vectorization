@@ -1,7 +1,5 @@
-import requests
-from flask import render_template, request, jsonify
-from src.db.tokenization import Tokenization
-from src.db.vectordb import VectorDb
+from flask import render_template, jsonify
+from src.vector_db.vectordb import VectorDb
 
 
 

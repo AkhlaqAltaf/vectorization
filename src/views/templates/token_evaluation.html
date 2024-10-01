@@ -3,14 +3,23 @@
 {% block title %} EVALUATION {% endblock title %}
 
 {% block body %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/multi_data.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <div class="container mt-4">
-    <h1>Keywords/Tokens Evaluation</h1>
-    <table class="table table-bordered">
+    <h1>Evaluation</h1>
+
+
+    <!-- Table displaying dynamic data -->
+    <table class="table table-bordered mt-3">
         <thead>
             <tr>
                 <th>Row#</th>
                 <th>Text Preview</th>
-                <th>Token Count</th>
+                <th id="dynamicHeader">Named Count</th> <!-- Header updates based on dropdown -->
                 <th>Paragraphs</th>
             </tr>
         </thead>
@@ -19,41 +28,45 @@
             <tr>
                 <td>{{ item.row }}</td>
                 <td>{{ item.text_preview[:20] }}...</td>
-     <td>
-    <a href="#" data-toggle="modal" data-target="#tokenCountModal"
-       onclick='showTokens({{ item.tokens | tojson | safe }})'>{{ item.token_count }}</a>
-</td>
-
-
+                <td>
+                    <a href="#" data-toggle="modal" data-target="#tokenCountModal"
+                       onclick='showTokens({{ item.tokens | tojson | safe }})'>
+                       {{ item.token_count }}
+                    </a>
+                </td>
                 <td>
                     <a href="#" data-toggle="modal" data-target="#fullDocumentModal"
-                       onclick="showFullDocument('{{ item.full_text }}')">{{ item.paragraph_count }}</a>
+                       onclick="showFullDocument('{{ item.full_text }}')">
+                       {{ item.paragraph_count }}
+                    </a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-       <!-- Loader Indicator -->
-       <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
-        <div class="spinner-border" role="status">
-        </div>
-        <p>Loading, please wait...</p>
-    </div>
-</div>
 
-    <button class="btn btn-info" data-toggle="modal" data-target="#uniqueTokensModal">
-        Unique Tokens ({{ unique_tokens }})
+
+           <!-- Loader Indicator -->
+           <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
+            <div class="spinner-border" role="status">
+            </div>
+            <p>Loading, please wait...</p>
+        </div>
+    </div>
+
+    <!-- Buttons for additional actions -->
+    <button class="btn btn-info" id="uniqueTokensBtn" data-toggle="modal" data-target="#uniqueTokensModal" onclick="tokenOccurence()">
+        Unique Named Entities ({{ unique_tokens }})
     </button>
-    <button class="btn btn-info" data-toggle="modal" data-target="#vectorDBModal">
+    <button class="btn btn-info" data-toggle="modal" data-target="#vectorDBModal" onclick="vectorDb()">
         Vector DB Size
     </button>
-    <button class="btn btn-info" data-toggle="modal" data-target="#sqlDBModal">
+    <button class="btn btn-info" data-toggle="modal" data-target="#sqlDBModal" onclick="sqlDb()">
         SQL DB Size
     </button>
 </div>
 
- 
-
+<!-- Modals for additional information (unchanged) -->
 <!-- Token Count Modal -->
 <div class="modal fade" id="tokenCountModal" tabindex="-1" role="dialog" aria-labelledby="tokenCountModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -87,6 +100,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Unique Tokens Modal -->
 <div class="modal fade" id="uniqueTokensModal" tabindex="-1" role="dialog" aria-labelledby="uniqueTokensModalLabel" aria-hidden="true">
@@ -157,6 +171,79 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Retrieve selected option from local storage, default to 'named'
+    const selectedOption = localStorage.getItem('selectedOption') || 'named';
+    updateUIForOption(selectedOption);
+
+    // Function to update UI dynamically based on selected option
+    function updateUIForOption(option) {
+        let dynamicHeader = document.getElementById('dynamicHeader');
+        let uniqueTokensBtn = document.getElementById('uniqueTokensBtn');
+
+        if (option === 'named') {
+            dynamicHeader.textContent = 'Named Count';
+            uniqueTokensBtn.textContent = 'Unique Named Entities (' + {{ unique_tokens }} + ')';
+        } else if (option === 'phrase') {
+            dynamicHeader.textContent = 'Phrase Count';
+            uniqueTokensBtn.textContent = 'Unique Phrases (' + {{ unique_tokens }} + ')';
+        } else if (option === 'sentence') {
+            dynamicHeader.textContent = 'Sentence Count';
+            uniqueTokensBtn.textContent = 'Unique Sentence (' + {{ unique_tokens }} + ')';
+        } else if (option === 'paragraph') {
+            dynamicHeader.textContent = 'Paragraph Count';
+            uniqueTokensBtn.style.display = 'none';
+        } else if (option === 'word') {
+            dynamicHeader.textContent = 'Word Count';
+            uniqueTokensBtn.textContent = 'Unique Word (' + {{ unique_tokens }} + ')';
+        }
+    }
+        // Function to update the dropdown label
+        function updateDropdownLabel(option) {
+            document.getElementById("dropdownLabel").innerText = option.charAt(0).toUpperCase() + option.slice(1);
+            // document.getElementById("selectedOption").innerText = "Selected Option: " + option; // Update selected option text
+        }
+    
+
+    // Set selected option and store it in local storage
+    function setOption(option) {
+        localStorage.setItem('selectedOption', option);
+        updateUIForOption(option);
+        updateDropdownLabel(option);
+        let currentUrl = window.location.href;
+        console.log("CURRENT URL ",currentUrl);
+        
+     
+        // Retrieve the selected option from localStorage
+        storedOption = localStorage.getItem("selectedOption") || 'tokens';
+        
+        // Create a new URL with the model parameter
+        const updatedHref = "?model=" + storedOption;
+        console.log(this.href);
+        // Update the window location only after setting the href correctly
+        window.location.href = updatedHref;
+    }
+
+    // Expose the function globally so dropdown items can call it
+    window.setOption = setOption;
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Retrieve selected option from local storage
+    const selectedOption = localStorage.getItem('selectedOption');
+
+    // Check if the selected option is tokens or phrases, and update the labels accordingly
+    if (selectedOption === 'tokens') {
+        document.querySelector('th:nth-child(3)').textContent = 'Unique Tokens';
+        document.querySelector('.btn-info').textContent = 'Unique Tokens (' + {{ unique_tokens }} + ')';
+        
+    } else if (selectedOption === 'phrases') {
+        document.querySelector('th:nth-child(3)').textContent = 'Phrase Count';
+        document.querySelector('.btn-info').textContent = 'Unique Phrases (' + {{ unique_tokens }} + ')';
+    }
+});
+
 function showTokens(tokens) {
     console.log(tokens); // Verify the input
 
@@ -193,13 +280,57 @@ function showTokens(tokens) {
         document.getElementById('fullDocumentText').textContent = fullText;
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-    // Fetch and display unique tokens when Unique Tokens button is clicked
-    document.querySelector('[data-target="#uniqueTokensModal"]').addEventListener("click", function() {
+
+
+    // Fetch and display SQL DB details when SQL DB button is clicked
+    function sqlDb() {
         // Show loader
         document.getElementById('loader').style.display = 'block';
+        const model =  localStorage.getItem("selectedOption") || 'tokens';
+         
+        fetch(`/sql-db-details/?model=${model}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#sqlDBModal .modal-body').innerHTML = `
+                    <p>Record count: ${data.record_count}</p>
+                    <p>Size: ${data.db_size}</p>
+                `;
+            })
+            .catch(error => console.error('Error fetching SQL DB details:', error))
+            .finally(() => {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+            });}
 
-        fetch('/token_occurrences/') // Update the endpoint to the correct API URL
+            
+    // Fetch and display vector DB details when Vector DB button is clicked
+    function vectorDb() {
+        // Show loader
+        document.getElementById('loader').style.display = 'block';
+        const model =  localStorage.getItem("selectedOption") || 'tokens';
+
+        fetch(`/vector-db-details/?model=${model}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#vectorDBModal .modal-body').innerHTML = `
+                    <p>Number of records: ${data.record_count}</p>
+                    <p>Size on disk: ${data.db_size}</p>
+                `;
+            })
+            .catch(error => console.error('Error fetching vector DB details:', error))
+            .finally(() => {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+            });
+    }
+
+        // Fetch and display unique tokens when Unique Tokens button is clicked
+        function  tokenOccurence() {
+        // Show loader
+        document.getElementById('loader').style.display = 'block';
+        const model =  localStorage.getItem("selectedOption") || 'tokens';
+
+        fetch(`/token_occurrences/?model=${model}`) // Update the endpoint to the correct API URL
             .then(response => response.json())
             .then(data => {
                 const uniqueTokensList = document.getElementById('uniqueTokensList');
@@ -217,48 +348,7 @@ function showTokens(tokens) {
                 // Hide loader
                 document.getElementById('loader').style.display = 'none';
             });
-    });
-
-    // Fetch and display vector DB details when Vector DB button is clicked
-    document.querySelector('[data-target="#vectorDBModal"]').addEventListener("click", function() {
-        // Show loader
-        document.getElementById('loader').style.display = 'block';
-
-        fetch('/vector-db-details/')
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('#vectorDBModal .modal-body').innerHTML = `
-                    <p>Number of records: ${data.record_count}</p>
-                    <p>Size on disk: ${data.db_size}</p>
-                `;
-            })
-            .catch(error => console.error('Error fetching vector DB details:', error))
-            .finally(() => {
-                // Hide loader
-                document.getElementById('loader').style.display = 'none';
-            });
-    });
-
-    // Fetch and display SQL DB details when SQL DB button is clicked
-    document.querySelector('[data-target="#sqlDBModal"]').addEventListener("click", function() {
-        // Show loader
-        document.getElementById('loader').style.display = 'block';
-
-        fetch('/sql/')
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('#sqlDBModal .modal-body').innerHTML = `
-                    <p>Record count: ${data.record_count}</p>
-                    <p>Size: ${data.size}</p>
-                `;
-            })
-            .catch(error => console.error('Error fetching SQL DB details:', error))
-            .finally(() => {
-                // Hide loader
-                document.getElementById('loader').style.display = 'none';
-            });
-    });
-});
+    }
 </script>
 
 {% endblock %}

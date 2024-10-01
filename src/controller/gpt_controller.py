@@ -1,7 +1,7 @@
 import requests
-from flask import  request, jsonify
-from src.db.tokenization import Tokenization
-from src.db.vectordb import VectorDb
+from flask import jsonify
+from src.tokenization.tokenization import Tokenization
+from src.vector_db.vectordb import VectorDb
 
 
 # ChatGPT API settings

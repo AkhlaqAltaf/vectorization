@@ -32,11 +32,11 @@ height: 100%; /* Full height */
 background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
 justify-content: center; /* Center contents horizontally */
 align-items: center; /* Center contents vertically */
-z-index: 999998; /* Ensure it is below the popup content */
+/* z-index: 999998; Ensure it is below the popup content */
 }
 
 .popup-content {
-z-index: 999999; /* Ensure this is on top */
+/* z-index: 999; Ensure this is on top */
 background: #fff; /* White background for the popup */
 padding: 20px; /* Padding around the content */
 border-radius: 8px; /* Rounded corners */
@@ -52,4 +52,7 @@ top: 10px; /* Position at the top */
 right: 10px; /* Position at the right */
 cursor: pointer; /* Cursor pointer for clickable */
 font-size: 24px; /* Font size for close icon */
+}
+.dropdown-menu {
+    z-index: 10000; /* Ensure dropdown appears on top */
 }

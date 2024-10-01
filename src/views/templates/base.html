@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectorization | {% block title %} {% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/logo.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/multi_data.js') }}"></script>
+
+    <style>
+        body {
+            padding-top: 70px; /* Adjust this value based on your navbar height */
+        }
+
+        .content {
+            padding: 20px; /* Padding for the body content */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-light" style="background-color: #e3f2fd;">
+    <a class="navbar-brand" href="/">
+        <div class="box">FAZIT-VECTOR</div>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" id="tokenEvalLink" href="/token_evaluation/">Token Evaluation</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Upload Data</a>
+            </li>
+
+            <!-- Dropdown menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="dropdownLabel">Select Option</span>
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="setOption('tokens')">NER</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="setOption('phrase')">Phrases</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="setOption('sentence')">Sentences</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="setOption('paragraph')">Paragraphs</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="setOption('word')">Words</a></li>
+                </ul>
+                
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="content">
+    {% block body %}
+   
+    {% endblock %}
+</div>
+
+<script>
+
+ 
+
+    document.getElementById("tokenEvalLink").addEventListener("click", function(event) {
+        event.preventDefault();
+        
+        // Retrieve the selected option from localStorage
+        storedOption = localStorage.getItem("selectedOption") || 'tokens';
+        
+        // Create a new URL with the model parameter
+        const updatedHref = this.href + "?model=" + storedOption;
+        
+        // Update the window location only after setting the href correctly
+        window.location.href = updatedHref;
+    });
+
+    // Initialize the model when the page loads
+    initializeModel();
+</script>
+
+<!-- Bootstrap JS dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
