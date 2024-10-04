@@ -209,17 +209,17 @@ class PopulateData:
             row_number = 0
             for row in csv_reader:
                 row_number += 1
-                page_id = row['0']
-                link = row['1']
-                topic = row['2']
-                full_text = row['3']
-                text_preview = row['5'][:20] + "..."  # Truncate text for preview
-                question = row['6']
+                page_id = row['page_id']
+                link = row['url']
+                topic = row['title']
+                full_text = row['full_text']
+                text_preview = row['full_text'][:20] + "..."  # Truncate text for preview
+                question = row['short_description']
                 entities_list = row['entities']  # Assuming 'entities' is a list of tuples
-                token_list = row['tokens']
+                token_list = row['combined_tokens']
                 token_list = ast.literal_eval(token_list)
 
-                paragraph_list = row['paragraphs']
+                paragraph_list = row['paragraph_list']
                 paragraph_list = ast.literal_eval(paragraph_list)
 
                 word_list = row['words']

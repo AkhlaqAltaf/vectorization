@@ -13,10 +13,18 @@
         <h1 class="mb-4">Data Operations</h1>
 
         <!-- File Upload Section -->
+                <div class="form-group">
+
+     <label  >Before Uploading Any File Please </label>
+
+        <a href="#" id="concat">Merge p4,p4b first</a>
+        </div>
+
         <div class="form-group">
             <label for="fileInput">Choose a file to upload:</label>
             <input type="file" id="fileInput" class="form-control-file">
             <button onclick="uploadFile()" class="btn btn-primary mt-3">Upload File</button>
+
         </div>
 
         <!-- Buttons to Clear SQL DB and Vector DB -->
@@ -30,11 +38,60 @@
     <!-- Loader -->
     <div id="loader" class="loader">Loading...</div>
 
+
+
+
+
+    <!-- File Uploader Modal -->
+<div class="modal fade" id="concatModel" tabindex="-1" aria-labelledby="concatModel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="concatTitle">Merge P4 and P5</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label for="fileInput">Choose p4 file:</label>
+            <input type="file" id="fileInputP4" class="form-control-file">
+        </div>
+          <div class="mb-3">
+            <label for="fileInput">Choose p4b file:</label>
+            <input type="file" id="fileInputP4b" class="form-control-file">
+        </div>
+        <div id="message2" class="alert message"></div>
+      </div>
+
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="fileSubmit" onclick="uploadFileToMerge()">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
     <!-- Bootstrap JS & jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+
+
+
+
+    document.getElementById('concat').addEventListener('click', function(event) {
+        event.preventDefault();
+        // Show the password modal
+        const concatModel = new bootstrap.Modal(document.getElementById('concatModel'));
+        concatModel.show();
+    });
+
+
+
         // Show loader
         function showLoader() {
             document.getElementById('loader').classList.add('show');
@@ -46,8 +103,8 @@
         }
 
         // Display message
-        function showMessage(text, type='success') {
-            const messageBox = document.getElementById('message');
+        function showMessage(text, type='success',id) {
+            const messageBox = document.getElementById(id);
             messageBox.classList.remove('alert-success', 'alert-danger');
             messageBox.classList.add(`alert-${type}`);
             messageBox.innerText = text;
@@ -63,7 +120,7 @@
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
             if (!file) {
-                showMessage('Please select a file to upload.', 'danger');
+                showMessage('Please select a file to upload.', 'danger','message');
                 return;
             }
 
@@ -79,8 +136,67 @@
 
             const result = await response.json();
             hideLoader();
-            showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+            showMessage(result.message, result.status === 'success' ? 'success' : 'danger','message');
         }
+// Handle file upload and trigger file download
+async function uploadFileToMerge() {
+    const fileInput1 = document.getElementById('fileInputP4');
+    const fileInput2 = document.getElementById('fileInputP4b');
+
+    const file1 = fileInput1.files[0];
+
+    if (!file1) {
+        showMessage('Please select file1 to upload.', 'danger', 'message2');
+        return;
+    }
+
+    const file2 = fileInput2.files[0];
+    if (!file2) {
+        showMessage('Please select file2 to upload.', 'danger', 'message2');
+        return;
+    }
+
+    showLoader();
+
+    const formData = new FormData();
+    formData.append('file1', file1);
+    formData.append('file2', file2);
+
+    try {
+        const response = await fetch('/merge_files', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            // Create a blob from the response
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+
+            // Create a temporary link to trigger the download
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'merged_file.csv'; // The name of the file to download
+            document.body.appendChild(a);
+            a.click();
+            a.remove(); // Remove the temporary link
+
+            // Clean up the download URL object
+            window.URL.revokeObjectURL(downloadUrl);
+
+            hideLoader();
+            showMessage('File downloaded successfully!', 'success', 'message2');
+        } else {
+            const result = await response.json();
+            hideLoader();
+            showMessage(result.message, 'danger', 'message2');
+        }
+    } catch (error) {
+        hideLoader();
+        showMessage('An error occurred during the file download.', 'danger', 'message2');
+    }
+}
+
 
         // Confirm and clear SQL DB
         async function clearSqlDb() {
@@ -91,7 +207,7 @@
                 });
                 const result = await response.json();
                 hideLoader();
-                showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+                showMessage(result.message, result.status === 'success' ? 'success' : 'danger','message');
             }
         }
 
@@ -104,7 +220,7 @@
                 });
                 const result = await response.json();
                 hideLoader();
-                showMessage(result.message, result.status === 'success' ? 'success' : 'danger');
+                showMessage(result.message, result.status === 'success' ? 'success' : 'danger','message');
             }
         }
     </script>

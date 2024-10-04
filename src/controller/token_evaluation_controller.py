@@ -23,21 +23,42 @@ def count_paragraphs(text):
 
 
 def token_evaluation_controller(request):
+    # <td>{{ item.row }}</td> <!-- Page # (Row number) -->
+    # <td>{{ item.match_context }}</td> <!-- Match Context, leave blank if no search -->
+    # <td>{{ item.similarity }}%</td> <!-- Similarity percentage -->
+    # <td>{{ item.text_preview[:20] }}...</td> <!-- Text preview -->
+    # <td>{{ item.page_type }}</td> <!-- Page Type: URL, Title, or paragraph number -->
+    # <td>{{ item.word_token_count }}</td> <!-- Word Tokens Count -->
+    # <td>{{ item.phrase_token_count }}</td> <!-- Phrase Tokens Count -->
+    # <td>{{ item.sentence_token_count }}</td> <!-- Sentence Tokens Count -->
+    # <td>{{ item.paragraph_token_count }}</td> <!-- Paragraph Tokens Count -->
+    # <td>{{ item.paragraph_count }}</td> <!-- Paragraph Count -->
     model = request.args.get('model')
     print("MODELS",model)
-    if model =="tokens":
-       data , unique_tokens_count=fetch_tokens()
+    tokens , unique_tokens_count=fetch_tokens()
 
-    elif  model=='phrase':
-        data, unique_tokens_count = fetch_phrases()
-    elif model =='sentence':
-        data, unique_tokens_count = fetch_sentences()
-    elif model =='paragraph':
-        data, unique_tokens_count = fetch_paragraphs()
-    elif model =="word":
-        data, unique_tokens_count = fetch_words()
+    phrases, unique_tokens_count = fetch_phrases()
+    sentences, unique_tokens_count = fetch_sentences()
+    paragraphs, unique_tokens_count = fetch_paragraphs()
+    words, unique_tokens_count = fetch_words()
+    items = []
+    for i in range(len(tokens)):
 
-    return render_template('token_evaluation.html', data=data,unique_tokens=unique_tokens_count)
+        data = {
+            'row':tokens[i]['row'],
+            'paragraph_count':tokens[i]['paragraph_count'],
+            'text_preview':tokens[i]['text_preview'],
+            'page_type':tokens[i]['topic'],
+            'url':tokens[i]['link'],
+            'word_token_count':words[i]['token_count'],
+            'phrase_token_count':phrases[i]['token_count'],
+            'sentence_token_count':sentences[i]['token_count'],
+            'paragraph_token_count':paragraphs[i]['token_count'],
+
+             }
+        items.append(data)
+
+    return render_template('main_search.html', data=items,unique_tokens=unique_tokens_count)
 
 
 
@@ -101,3 +122,17 @@ def token_occurrences_controller(request):
     token_occurrences_list = [{"token": token, "count": count} for token, count in token_count_data]
 
     return jsonify(token_occurrences_list)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

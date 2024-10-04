@@ -19,33 +19,33 @@ def fetch_data_for_model(model, model_meta_association, model_value_field, id_na
 
     for i, record in enumerate(records):
         row_number = i + 1
-        text_preview = record.full_text[:20] + "..."  # First 20 characters with ellipsis
-        full_text = record.full_text  # Full text to extract paragraph count
+        text_preview = record.full_text[:20] + "..."
+        full_text = record.full_text
 
-        # Fetch all values (tokens, phrases, sentences, paragraphs) related to this metadata
         meta_associations_list = model_meta_association.query.filter_by(metadata_id=record.id).all()
 
-        # Use the dynamic id_name to retrieve the appropriate id (e.g., word_id, phrase_id)
         value_list = [model.query.get(getattr(meta_association, id_name)) for meta_association in
                       meta_associations_list]
 
-        value_count = len(value_list)  # Count of the values (tokens, phrases, etc.)
-        paragraph_count, paragraphs = count_paragraphs(full_text)  # Count paragraphs
-        unique_values_set.update([getattr(value, model_value_field) for value in value_list])  # Add values to the set
+        value_count = len(value_list)
+        paragraph_count, paragraphs = count_paragraphs(full_text)
+        unique_values_set.update([getattr(value, model_value_field) for value in value_list])
 
-        values = sorted([getattr(value, model_value_field) for value in value_list])  # Sorting alphabetically
+        values = sorted([getattr(value, model_value_field) for value in value_list])
 
         # Add to data list
         data.append({
             "row": row_number,
             "text_preview": text_preview,
             "token_count": value_count,  # Generalized count
+            
             "paragraph_count": paragraph_count,
             "tokens": values,  # Generalized values (tokens/phrases)
             "full_text": full_text,  # Full text to be displayed in popup
             "paragraphs": paragraphs,  # Paragraphs for the popup
             "entities": record.entities,  # Assuming you have an `entities` field in your table
-            "link": record.link  # Link from the record
+            "link": record.link,  # Link from the record
+            'topic':record.topic,
         })
 
     unique_values_count = len(unique_values_set)

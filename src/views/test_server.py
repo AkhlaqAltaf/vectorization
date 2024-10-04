@@ -1,15 +1,16 @@
 import os
 
-from flask import request, jsonify, render_template
-from sqlalchemy import text
+import pandas
+from flask import request, render_template, send_from_directory, send_file
 
 from src.controller.admin_controller import upload_file_controller
+from src.controller.globa_token_controller import global_token_controller
 from src.controller.gpt_controller import ai_command_controller
 from src.controller.home_page_controller import home_page_controller
+from src.controller.merge_files_controller import merge_files_controller
 from src.controller.token_evaluation_controller import token_evaluation_controller, token_occurrences_controller, \
     fetch_vector_db_info_controller, fetch_sql_db_info_controller
 from src.tokenization.tokenization import Tokenization
-from src.vector_db.vectordb import VectorDb
 from src.views import create_app, db
 
 app = create_app()
@@ -67,7 +68,6 @@ def upload_file():
     return upload_file_controller(request, UPLOAD_FOLDER)
 
 
-from sqlalchemy import text
 from flask import jsonify
 
 
@@ -87,9 +87,16 @@ def clear_sql_db():
         db.session.rollback()  # Rollback in case of error
         return jsonify({'status': 'error', 'message': str(e)})
 
-
+@app.route('/token_count',methods=['post','GET'])
+def token_count_global():
+    return  global_token_controller(request)
 
 @app.route('/clear_vector_db', methods=['POST'])
 def clear_vector_db():
     # Add logic to clear the vector database here
     return jsonify({'status': 'success', 'message': 'Vector Database cleared successfully'})
+
+
+@app.route('/merge_files', methods=['POST', 'GET'])
+def merge_files():
+    return merge_files_controller(request,UPLOAD_FOLDER)

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %} EVALUATION {% endblock title %}
+
+{% block body %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/multi_data.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+
+<div class="container mt-4">
+    <h1>Evaluation</h1><td>
+
+    <!-- Table displaying dynamic data -->
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Page #</th> <!-- This is the row number renamed as Page # -->
+                <th>Match Context<br>(if search)</th> <!-- Two-line header for Match Context -->
+                <th>Similarity %</th>
+                <th>Text Preview</th>
+                <th>Page Type<br>(URL/Title/#)</th> <!-- Two-line header for Page Type -->
+                <th>Word Tokens<br>Count</th> <!-- Two-line header for Word Tokens Count -->
+                <th>Phrase Tokens<br>Count</th> <!-- Two-line header for Phrase Tokens Count -->
+                <th>Sentence Tokens<br>Count</th> <!-- Two-line header for Sentence Tokens Count -->
+                <th>Paragraph Tokens<br>Count</th> <!-- Two-line header for Paragraph Tokens Count -->
+                <th>Paragraphs<br>Count</th> <!-- Two-line header for Paragraphs Count -->
+                <th>URL</th> <!-- Simplified column for displaying view icon -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.row }}</td> <!-- Page # (Row number) -->
+                <td>{{ item.match_context }}</td> <!-- Match Context, leave blank if no search -->
+                <td>{{ item.similarity }}%</td> <!-- Similarity percentage -->
+                <td>{{ item.text_preview[:20] }}...</td> <!-- Text preview -->
+                <td>{{ item.page_type }}</td> <!-- Page Type: URL, Title, or paragraph number -->
+                <td>{{ item.word_token_count }}</td> <!-- Word Tokens Count -->
+                <td>{{ item.phrase_token_count }}</td> <!-- Phrase Tokens Count -->
+                <td>{{ item.sentence_token_count }}</td> <!-- Sentence Tokens Count -->
+                <td>{{ item.paragraph_token_count }}</td> <!-- Paragraph Tokens Count -->
+                <td>{{ item.paragraph_count }}</td> <!-- Paragraph Count -->
+                <td>
+                    <!-- View icon for URL, triggers modal popup to show URL and Title -->
+                    <a href="#" data-toggle="modal" data-target="#urlModal" onclick="showUrlInfo('{{ item.url }}', '{{ item.page_type }}')">
+                        <i class="bi bi-eye"></i> <!-- FontAwesome eye icon for viewing URL and Title -->
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Loader Indicator -->
+    <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
+        <div class="spinner-border" role="status">
+        </div>
+        <p>Loading, please wait...</p>
+    </div>
+</div>
+
+<!-- URL and Title Modal -->
+<div class="modal fade" id="urlModal" tabindex="-1" role="dialog" aria-labelledby="urlModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="urlModalLabel">URL and Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>URL:</strong> <a href="" target="_blank" id="url"><span id="modalUrl"></span></a></p>
+                <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showUrlInfo(url, title) {
+    document.getElementById('modalUrl').textContent = url  ;
+    document.getElementById('url').href = url
+    document.getElementById('modalTitle').textContent = title;
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}

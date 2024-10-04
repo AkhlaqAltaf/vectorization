@@ -31,7 +31,7 @@ def upload_file_controller(request,UPLOAD_FOLDER):
         file.save(file_path)
         tokenize= Tokenization(file_path=file_path,output_file=output_file_path)
         populate_data = PopulateData(db=db)
-        populate_data.populate_data(tokenize.out_put_file)
+        populate_data.populate_data(tokenize.output_file)
         return jsonify({'status': 'success', 'message': 'File uploaded successfully', 'filename': filename_with_timestamp})
 
     return jsonify({'status': 'error', 'message': 'File upload failed'})

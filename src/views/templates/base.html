@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="{{ url_for('static', filename='js/multi_data.js') }}"></script>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body {
             padding-top: 70px; /* Adjust this value based on your navbar height */
@@ -28,7 +28,7 @@
 
 <nav class="navbar navbar-expand-lg fixed-top navbar-light" style="background-color: #e3f2fd;">
     <a class="navbar-brand" href="/">
-        <div class="box">FAZIT-VECTOR</div>
+        <div class="box">Old-Search</div>
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,19 +37,23 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" id="tokenEvalLink" href="/token_evaluation/">Token Evaluation</a>
+                <a class="nav-link" id="tokenEvalLink" href="/token_evaluation/">Main Search</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" id="adminLink">Admin Control</a>
             </li>
-
+           <li class="nav-item">
+               <a class="nav-link" href="/token_count",id="token-count">
+              Global Token Counts
+               </a>
+           </li>
             <!-- Dropdown menu -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <span id="dropdownLabel">Select Option</span>
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#" onclick="setOption('tokens')">NER</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="setOption('tokens')">Entities</a></li>
                     <li><a class="dropdown-item" href="#" onclick="setOption('phrase')">Phrases</a></li>
                     <li><a class="dropdown-item" href="#" onclick="setOption('sentence')">Sentences</a></li>
                     <li><a class="dropdown-item" href="#" onclick="setOption('paragraph')">Paragraphs</a></li>
